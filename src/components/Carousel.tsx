@@ -1,26 +1,125 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Carousel.scss';
 
-const Carousel: React.FC = () => (
-  <div className="Carousel">
-    <ul className="Carousel__list">
-      <li>
-        <img src="./img/1.png" alt="1" />
-      </li>
-      <li>
-        <img src="./img/1.png" alt="2" />
-      </li>
-      <li>
-        <img src="./img/1.png" alt="3" />
-      </li>
-      <li>
-        <img src="./img/1.png" alt="4" />
-      </li>
-    </ul>
+type Props = {
+  images: string[];
+  step?: number;
+  frameSize?: number;
+  itemWidth?: number;
+  animationDuration?: number;
+  infinite?: boolean;
+};
 
-    <button type="button">Prev</button>
-    <button type="button">Next</button>
-  </div>
-);
+const Carousel: React.FC<Props> = ({
+  images,
+  step = 3,
+  frameSize = 3,
+  itemWidth = 130,
+  animationDuration = 1000,
+  infinite = false,
+}) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const handleNext = () => {
+    if (isAnimating) {
+      return;
+    }
+
+    setIsAnimating(true);
+    setTimeout(() => {
+      setCurrentIndex(prevIndex => {
+        const maxIndex = images.length - frameSize;
+        const nextIndex = prevIndex + step;
+
+        if (infinite) {
+          return nextIndex > maxIndex ? 0 : nextIndex;
+        }
+
+        return Math.min(nextIndex, maxIndex);
+      });
+      setIsAnimating(false);
+    }, animationDuration);
+  };
+
+  const handlePrev = () => {
+    if (isAnimating) {
+      return;
+    }
+
+    setIsAnimating(true);
+    setTimeout(() => {
+      setCurrentIndex(prevIndex => {
+        const minIndex = 0;
+        const prevIndexValue = prevIndex - step;
+
+        if (infinite) {
+          return prevIndexValue < minIndex
+            ? images.length - frameSize
+            : prevIndexValue;
+        }
+
+        return Math.max(prevIndexValue, minIndex);
+      });
+      setIsAnimating(false);
+    }, animationDuration);
+  };
+
+  const offset = -currentIndex * itemWidth;
+  const frameWidth = frameSize * itemWidth;
+
+  return (
+    <div className="Carousel">
+      <div
+        className="Carousel__frame"
+        style={{ width: `${frameWidth}px`, height: `${itemWidth}px` }}
+      >
+        <ul
+          className="Carousel__list"
+          style={{
+            transform: `translateX(${offset}px)`,
+            transition: isAnimating
+              ? `transform ${animationDuration}ms ease-in-out`
+              : 'none',
+          }}
+        >
+          {images.map((image, index) => {
+            const isVisible =
+              index >= currentIndex && index < currentIndex + frameSize;
+
+            return (
+              <li
+                key={index}
+                className="Carousel__item"
+                style={{
+                  width: `${itemWidth}px`,
+                  height: `${itemWidth}px`,
+                  opacity: isVisible ? 1 : 0,
+                  pointerEvents: isVisible ? 'auto' : 'none',
+                }}
+              >
+                <img src={image} alt={`carousel-${index}`} width={itemWidth} />
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      <div className="Carousel__controls">
+        <button type="button" onClick={handlePrev} className="Carousel__button">
+          Prev
+        </button>
+        <button
+          type="button"
+          onClick={handleNext}
+          className="Carousel__button"
+          data-cy="next"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default Carousel;
