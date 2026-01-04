@@ -27,17 +27,18 @@ const Carousel: React.FC<Props> = ({
     }
 
     setIsAnimating(true);
+    setCurrentIndex(prevIndex => {
+      const maxIndex = images.length - frameSize;
+      const nextIndex = prevIndex + step;
+
+      if (infinite) {
+        return nextIndex > maxIndex ? 0 : nextIndex;
+      }
+
+      return Math.min(nextIndex, maxIndex);
+    });
+
     setTimeout(() => {
-      setCurrentIndex(prevIndex => {
-        const maxIndex = images.length - frameSize;
-        const nextIndex = prevIndex + step;
-
-        if (infinite) {
-          return nextIndex > maxIndex ? 0 : nextIndex;
-        }
-
-        return Math.min(nextIndex, maxIndex);
-      });
       setIsAnimating(false);
     }, animationDuration);
   };
@@ -48,19 +49,20 @@ const Carousel: React.FC<Props> = ({
     }
 
     setIsAnimating(true);
+    setCurrentIndex(prevIndex => {
+      const minIndex = 0;
+      const prevIndexValue = prevIndex - step;
+
+      if (infinite) {
+        return prevIndexValue < minIndex
+          ? images.length - frameSize
+          : prevIndexValue;
+      }
+
+      return Math.max(prevIndexValue, minIndex);
+    });
+
     setTimeout(() => {
-      setCurrentIndex(prevIndex => {
-        const minIndex = 0;
-        const prevIndexValue = prevIndex - step;
-
-        if (infinite) {
-          return prevIndexValue < minIndex
-            ? images.length - frameSize
-            : prevIndexValue;
-        }
-
-        return Math.max(prevIndexValue, minIndex);
-      });
       setIsAnimating(false);
     }, animationDuration);
   };
@@ -83,25 +85,15 @@ const Carousel: React.FC<Props> = ({
               : 'none',
           }}
         >
-          {images.map((image, index) => {
-            const isVisible =
-              index >= currentIndex && index < currentIndex + frameSize;
-
-            return (
-              <li
-                key={index}
-                className="Carousel__item"
-                style={{
-                  width: `${itemWidth}px`,
-                  height: `${itemWidth}px`,
-                  opacity: isVisible ? 1 : 0,
-                  pointerEvents: isVisible ? 'auto' : 'none',
-                }}
-              >
-                <img src={image} alt={`carousel-${index}`} width={itemWidth} />
-              </li>
-            );
-          })}
+          {images.map((image, index) => (
+            <li
+              key={index}
+              className="Carousel__item"
+              style={{ width: `${itemWidth}px`, height: `${itemWidth}px` }}
+            >
+              <img src={image} alt={`carousel-${index}`} width={itemWidth} />
+            </li>
+          ))}
         </ul>
       </div>
 
