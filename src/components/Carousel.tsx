@@ -28,7 +28,7 @@ const Carousel: React.FC<Props> = ({
 
     setIsAnimating(true);
     setCurrentIndex(prevIndex => {
-      const maxIndex = images.length - frameSize;
+      const maxIndex = Math.max(0, images.length - frameSize);
       const nextIndex = prevIndex + step;
 
       if (infinite) {
@@ -50,16 +50,14 @@ const Carousel: React.FC<Props> = ({
 
     setIsAnimating(true);
     setCurrentIndex(prevIndex => {
-      const minIndex = 0;
+      const maxIndex = Math.max(0, images.length - frameSize);
       const prevIndexValue = prevIndex - step;
 
       if (infinite) {
-        return prevIndexValue < minIndex
-          ? images.length - frameSize
-          : prevIndexValue;
+        return prevIndexValue < 0 ? maxIndex : prevIndexValue;
       }
 
-      return Math.max(prevIndexValue, minIndex);
+      return Math.max(prevIndexValue, 0);
     });
 
     setTimeout(() => {
